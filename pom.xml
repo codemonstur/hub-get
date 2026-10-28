@@ -1,0 +1,280 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.github.codemonstur</groupId>
+    <artifactId>hub-get</artifactId>
+    <version>1</version>
+
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>An apt-get clone that installs packages from GitHub releases</description>
+    <url>https://github.com/codemonstur/hub-get</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>codemonstur</id>
+            <name>Jurgen Voorneveld</name>
+            <email>jegvoorneveld@gmail.com</email>
+        </developer>
+    </developers>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>17</maven.compiler.release>
+
+        <maven.version>3.6.3</maven.version>
+
+        <version.library.jcli>2.0.0</version.library.jcli>
+        <version.library.gson>2.15.0</version.library.gson>
+        <version.library.junit>6.1.3</version.library.junit>
+        <version.library.mockito>5.10.0</version.library.mockito>
+        <version.library.snakeyaml>2.2</version.library.snakeyaml>
+
+        <version.plugin.check-cves>1.1.0</version.plugin.check-cves>
+        <version.plugin.check-license>1.3.0</version.plugin.check-license>
+        <version.plugin.codegrade>0.2.0</version.plugin.codegrade>
+        <version.plugin.compiler>3.12.1</version.plugin.compiler>
+        <version.plugin.enforcer>3.4.1</version.plugin.enforcer>
+        <version.plugin.jacoco>0.8.11</version.plugin.jacoco>
+        <version.plugin.shade>3.5.2</version.plugin.shade>
+        <version.plugin.surefire>3.2.5</version.plugin.surefire>
+    </properties>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${version.plugin.enforcer}</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven-version</id>
+                        <goals><goal>enforce</goal></goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>${maven.version}</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${version.plugin.compiler}</version>
+                <configuration>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <release>${maven.compiler.release}</release>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${version.plugin.surefire}</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${version.plugin.jacoco}</version>
+                <executions>
+                    <execution>
+                        <id>pre-unit-test</id>
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>post-unit-test</id>
+                        <phase>test</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${version.plugin.shade}</version>
+                <configuration>
+                    <filters>
+                        <filter>
+                            <artifact>com.fasterxml.jackson.core:jackson-core:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/services/com.fasterxml.jackson.core.JsonFactory</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>com.fasterxml.jackson.core:jackson-databind:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/services/com.fasterxml.jackson.core.ObjectCodec</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>*.*</artifact>
+                            <excludes>
+                                <exclude>module-info.class</exclude>
+                                <exclude>**/module-info.class</exclude>
+                                <exclude>META-INF/MANIFEST.MF</exclude>
+                                <exclude>META-INF/DEPENDENCIES</exclude>
+                                <exclude>META-INF/LICENSE</exclude>
+                                <exclude>META-INF/LICENSE.txt</exclude>
+                                <exclude>META-INF/LICENSE.md</exclude>
+                                <exclude>META-INF/NOTICE</exclude>
+                                <exclude>META-INF/NOTICE.md</exclude>
+                                <exclude>META-INF/NOTICE.txt</exclude>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <transformers>
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <manifestEntries>
+                                <Main-Class>hubget.Main</Main-Class>
+                                <Implementation-Title>${project.artifactId}</Implementation-Title>
+                                <Implementation-Version>${project.version}</Implementation-Version>
+                                <Implementation-Vendor>${project.groupId}</Implementation-Vendor>
+                            </manifestEntries>
+                        </transformer>
+                    </transformers>
+                    <minimizeJar>false</minimizeJar>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>com.github.codemonstur</groupId>
+            <artifactId>jcli</artifactId>
+            <version>${version.library.jcli}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>${version.library.gson}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${version.library.junit}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${version.library.mockito}</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>licenses</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.codemonstur</groupId>
+                        <artifactId>maven-check-license</artifactId>
+                        <version>${version.plugin.check-license}</version>
+                        <executions>
+                            <execution><goals><goal>check</goal></goals></execution>
+                        </executions>
+                        <configuration>
+                            <includeTestDependencies>true</includeTestDependencies>
+                            <rules>
+                                <rule>name:equal:The MIT License</rule>
+                                <rule>url:equal:https://opensource.org/license/mit</rule>
+                                <rule>url:regex:(http|https)://(www.)?opensource.org/licenses/(MIT|mit-license.php)</rule>
+                                <rule>name:equal:BSD License</rule>
+                                <rule>url:equal:http://www.opensource.org/licenses/bsd-license.php</rule>
+                                <rule>url:regex:(http|https)://opensource.org/licenses/BSD-(2|3)-Clause</rule>
+                                <rule>name:regex:(The )?Apache(\s|-)(Software )?(License |License, )?(Version |version )?2\.0</rule>
+                            </rules>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>vulnerabilities</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.codemonstur</groupId>
+                        <artifactId>maven-check-cves</artifactId>
+                        <version>${version.plugin.check-cves}</version>
+                        <executions>
+                            <execution><goals><goal>check</goal></goals></execution>
+                        </executions>
+                        <configuration>
+                            <includeTestDependencies>true</includeTestDependencies>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>codequality</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+
+                    <plugin>
+                        <groupId>com.github.codemonstur</groupId>
+                        <artifactId>codegrade-maven-plugin</artifactId>
+                        <version>${version.plugin.codegrade}</version>
+                        <executions>
+                            <execution><goals><goal>check</goal></goals></execution>
+                        </executions>
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
+
+</project>
+
+
+
+

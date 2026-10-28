@@ -1,0 +1,14 @@
+include https://raw.githubusercontent.com/codemonstur/bobfiles/master/foss-app-github
+
+vendor: com.github.codemonstur
+name: hub-get
+version: 1
+release: 17
+packaging: jar
+enablePreview: false
+mainClass: hubget.Main
+dependencies:
+  - repository: com.github.codemonstur:jcli:2.0.0
+  - repository: com.google.code.gson:gson:2.15.0
+  - repository: org.junit.jupiter:junit-jupiter:6.1.3
+    scope: test
