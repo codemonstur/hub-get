@@ -1,4 +1,4 @@
-package hubget;
+package hubget.model;
 
 import jcli.annotations.CliCommand;
 import jcli.annotations.CliOption;
@@ -8,4 +8,5 @@ public final class CleanArgs {
 
     @CliOption(name = 'h', longName = "help", isHelp = true, description = "Print this help")
     public boolean help;
+
 }

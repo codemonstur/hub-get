@@ -14,21 +14,9 @@ import java.util.Map;
 
 public final class State {
 
-    public static final class Package {
-        public String repo;
-        public String tag;
-        public String asset;
-        public String installDir;
-        public long installedAt;
-
-        public Package() { }
-
+    public record Package(String repo, String tag, String asset, String installDir, long installedAt) {
         public Package(final String repo, final String tag, final String asset, final String installDir) {
-            this.repo = repo;
-            this.tag = tag;
-            this.asset = asset;
-            this.installDir = installDir;
-            this.installedAt = System.currentTimeMillis();
+            this(repo, tag, asset, installDir, System.currentTimeMillis());
         }
     }
 

@@ -8,13 +8,20 @@ import com.google.gson.JsonParser;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.net.http.HttpClient.Redirect.NORMAL;
+import static java.net.http.HttpResponse.BodyHandlers.ofInputStream;
+import static java.net.http.HttpResponse.BodyHandlers.ofString;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+
 public final class GitHub {
 
-    private static final HttpClient CLIENT = HttpClient.newHttpClient();
+    private static final HttpClient CLIENT = HttpClient.newBuilder()
+            .followRedirects(NORMAL).build();
 
     public static String token() {
         final String t = System.getenv("HUB_GET_TOKEN");
@@ -36,8 +43,8 @@ public final class GitHub {
     }
 
     public static JsonObject getJson(final String url) throws Exception {
-        final HttpRequest req = request(url).GET().build();
-        final HttpResponse<String> res = CLIENT.send(req, HttpResponse.BodyHandlers.ofString());
+        final var req = request(url).GET().build();
+        final var res = CLIENT.send(req, ofString());
         if (res.statusCode() < 200 || res.statusCode() >= 300) {
             throw new RuntimeException("GitHub request failed: " + res.statusCode() + " " + res.body());
         }
@@ -45,8 +52,8 @@ public final class GitHub {
     }
 
     public static JsonArray getArray(final String url) throws Exception {
-        final HttpRequest req = request(url).GET().build();
-        final HttpResponse<String> res = CLIENT.send(req, HttpResponse.BodyHandlers.ofString());
+        final var req = request(url).GET().build();
+        final var res = CLIENT.send(req, ofString());
         if (res.statusCode() < 200 || res.statusCode() >= 300) {
             throw new RuntimeException("GitHub request failed: " + res.statusCode() + " " + res.body());
         }
@@ -61,7 +68,7 @@ public final class GitHub {
     }
 
     public static List<String> searchRepos(final String query) throws Exception {
-        final String url = "https://api.github.com/search/repositories?q=" + java.net.URLEncoder.encode(query, java.nio.charset.StandardCharsets.UTF_8) + "&per_page=20";
+        final String url = "https://api.github.com/search/repositories?q=" + java.net.URLEncoder.encode(query, UTF_8) + "&per_page=20";
         final JsonObject obj = getJson(url);
         final JsonArray items = obj.getAsJsonArray("items");
         final List<String> result = new ArrayList<>();
@@ -73,13 +80,13 @@ public final class GitHub {
     }
 
     public static void download(final String url, final java.nio.file.Path target) throws Exception {
-        final HttpRequest req = request(url).GET().build();
-        final HttpResponse<java.io.InputStream> res = CLIENT.send(req, HttpResponse.BodyHandlers.ofInputStream());
+        final var req = request(url).GET().build();
+        final var res = CLIENT.send(req, ofInputStream());
         if (res.statusCode() < 200 || res.statusCode() >= 300) {
             throw new RuntimeException("Download failed: " + res.statusCode());
         }
         try (var in = res.body()) {
-            java.nio.file.Files.copy(in, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(in, target, REPLACE_EXISTING);
         }
     }
 

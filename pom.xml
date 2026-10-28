@@ -38,7 +38,7 @@
         <version.library.snakeyaml>2.2</version.library.snakeyaml>
 
         <version.plugin.check-cves>1.1.0</version.plugin.check-cves>
-        <version.plugin.check-license>1.3.0</version.plugin.check-license>
+        <version.plugin.check-license>1.4.0</version.plugin.check-license>
         <version.plugin.codegrade>0.2.0</version.plugin.codegrade>
         <version.plugin.compiler>3.12.1</version.plugin.compiler>
         <version.plugin.enforcer>3.4.1</version.plugin.enforcer>
@@ -208,7 +208,10 @@
                         <artifactId>maven-check-license</artifactId>
                         <version>${version.plugin.check-license}</version>
                         <executions>
-                            <execution><goals><goal>check</goal></goals></execution>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals><goal>check</goal></goals>
+                            </execution>
                         </executions>
                         <configuration>
                             <includeTestDependencies>true</includeTestDependencies>
@@ -240,7 +243,10 @@
                         <artifactId>maven-check-cves</artifactId>
                         <version>${version.plugin.check-cves}</version>
                         <executions>
-                            <execution><goals><goal>check</goal></goals></execution>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals><goal>check</goal></goals>
+                            </execution>
                         </executions>
                         <configuration>
                             <includeTestDependencies>true</includeTestDependencies>
@@ -263,7 +269,10 @@
                         <artifactId>codegrade-maven-plugin</artifactId>
                         <version>${version.plugin.codegrade}</version>
                         <executions>
-                            <execution><goals><goal>check</goal></goals></execution>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals><goal>check</goal></goals>
+                            </execution>
                         </executions>
                     </plugin>
 

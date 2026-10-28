@@ -1,18 +1,16 @@
-package hubget;
+package hubget.model;
 
 import jcli.annotations.CliCommand;
 import jcli.annotations.CliOption;
 import jcli.annotations.CliPositional;
 
-import java.util.List;
-
-@CliCommand(name = "remove", description = "Remove one or more installed packages")
-public final class RemoveArgs {
+@CliCommand(name = "search", description = "Search GitHub for packages")
+public final class SearchArgs {
 
     @CliPositional
-    public List<String> repos;
-
+    public String query;
 
     @CliOption(name = 'h', longName = "help", isHelp = true, description = "Print this help")
     public boolean help;
+
 }

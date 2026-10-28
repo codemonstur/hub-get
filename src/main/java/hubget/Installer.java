@@ -4,26 +4,23 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+
+import static java.nio.file.attribute.PosixFilePermission.*;
+import static java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE;
+import static java.nio.file.attribute.PosixFilePermission.GROUP_READ;
+import static java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE;
+import static java.nio.file.attribute.PosixFilePermission.OTHERS_READ;
 
 public final class Installer {
 
-    public static final class SelectedAsset {
-        public final String name;
-        public final String url;
-        public final long size;
-        public SelectedAsset(final String name, final String url, final long size) {
-            this.name = name;
-            this.url = url;
-            this.size = size;
-        }
-    }
+    public record SelectedAsset(String name, String url, long size) { }
 
     public static String osKey() {
         final String os = System.getProperty("os.name", "").toLowerCase();
@@ -42,7 +39,7 @@ public final class Installer {
     }
 
     public static SelectedAsset selectAsset(final JsonArray assets) {
-        if (assets == null || assets.size() == 0) return null;
+        if (assets == null || assets.isEmpty()) return null;
         final String os = osKey();
         final String arch = archKey();
         final List<SelectedAsset> candidates = new ArrayList<>();
@@ -113,14 +110,8 @@ public final class Installer {
         } catch (Exception ignored) {
         }
         try {
-            Files.setPosixFilePermissions(file, java.util.Set.of(
-                    java.nio.file.attribute.PosixFilePermission.OWNER_READ,
-                    java.nio.file.attribute.PosixFilePermission.OWNER_WRITE,
-                    java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE,
-                    java.nio.file.attribute.PosixFilePermission.GROUP_READ,
-                    java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE,
-                    java.nio.file.attribute.PosixFilePermission.OTHERS_READ,
-                    java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE));
+            Files.setPosixFilePermissions(file, Set.of(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE,
+                    GROUP_READ, GROUP_EXECUTE, OTHERS_READ, OTHERS_EXECUTE));
         } catch (Exception ignored) {
         }
     }

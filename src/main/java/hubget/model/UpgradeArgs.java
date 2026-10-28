@@ -1,4 +1,4 @@
-package hubget;
+package hubget.model;
 
 import jcli.annotations.CliCommand;
 import jcli.annotations.CliOption;
@@ -9,7 +9,7 @@ public final class UpgradeArgs {
     @CliOption(longName = "dg-only", description = "Only upgrade packages installed by hub-get")
     public boolean dgOnly;
 
-
     @CliOption(name = 'h', longName = "help", isHelp = true, description = "Print this help")
     public boolean help;
+
 }

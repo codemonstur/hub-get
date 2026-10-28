@@ -1,16 +1,18 @@
-package hubget;
+package hubget.model;
 
 import jcli.annotations.CliCommand;
 import jcli.annotations.CliOption;
 import jcli.annotations.CliPositional;
 
-@CliCommand(name = "show", description = "Show details about a package")
-public final class ShowArgs {
+import java.util.List;
+
+@CliCommand(name = "remove", description = "Remove one or more installed packages")
+public final class RemoveArgs {
 
     @CliPositional
-    public String repo;
-
+    public List<String> repos;
 
     @CliOption(name = 'h', longName = "help", isHelp = true, description = "Print this help")
     public boolean help;
+
 }

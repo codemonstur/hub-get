@@ -4,9 +4,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import hubget.model.*;
 import jcli.CommandResult;
 import jcli.CliParserBuilder;
 
+import static java.util.Comparator.reverseOrder;
 import static jcli.CliParserBuilder.newCliParser;
 
 public enum Main {;
@@ -25,8 +27,8 @@ public enum Main {;
                     .subcommand("show", "Show package details", newCliParser(ShowArgs::new).onErrorPrintHelpAndExit().onHelpPrintHelpAndExit())
                     .subcommand("clean", "Remove cached downloads", newCliParser(CleanArgs::new).onErrorPrintHelpAndExit().onHelpPrintHelpAndExit());
 
-            final CommandResult<RootArgs> result = root.parseWithSubcommands(args);
-            final RootArgs rootArgs = result.getRoot();
+            final var result = root.parseWithSubcommands(args);
+            final var rootArgs = result.getRoot();
 
             if (!result.hasSubcommand()) {
                 System.out.println("hub-get - an apt-get clone that installs from GitHub");
@@ -34,7 +36,7 @@ public enum Main {;
                 return;
             }
 
-            final String command = result.getSubcommand();
+            final var command = result.getSubcommand();
             switch (command) {
                 case "install" -> handleInstall(result.get(InstallArgs.class), rootArgs);
                 case "remove" -> handleRemove(result.get(RemoveArgs.class));
@@ -46,7 +48,7 @@ public enum Main {;
                 case "clean" -> handleClean(result.get(CleanArgs.class));
                 default -> System.out.println("Unknown command: " + command);
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             System.err.println("[ERROR] " + e.getMessage());
             System.exit(1);
         }
@@ -56,7 +58,7 @@ public enum Main {;
         if (args.repos == null || args.repos.isEmpty()) {
             throw new IllegalArgumentException("Missing package name. Usage: hub-get install owner/repo");
         }
-        for (String repoSpec : args.repos) {
+        for (final var repoSpec : args.repos) {
             String repo = repoSpec;
             String tag = args.tag;
             if (repo.contains("@")) {
@@ -70,12 +72,12 @@ public enum Main {;
         }
     }
 
-    private static void handleRemove(final RemoveArgs args) throws Exception {
+    private static void handleRemove(final RemoveArgs args) {
         if (args.repos == null || args.repos.isEmpty()) {
             throw new IllegalArgumentException("Missing package name.");
         }
         final var state = State.load();
-        for (String repo : args.repos) {
+        for (final var repo : args.repos) {
             if (state.remove(repo) != null) {
                 System.out.println("Removed " + repo + " from tracking.");
             } else {
@@ -85,18 +87,18 @@ public enum Main {;
         State.save(state);
     }
 
-    private static void handleUpdate(final UpdateArgs args) throws Exception {
+    private static void handleUpdate(final UpdateArgs args) {
         if (args.quiet) {
             // quiet
         }
         System.out.println("Updating package index...");
         if (!args.reposOnly) {
             final var state = State.load();
-            for (String repo : state.keySet()) {
+            for (final var repo : state.keySet()) {
                 try {
                     final var rel = GitHub.release(repo, null);
-                    final String latest = rel.get("tag_name").getAsString();
-                    final String current = state.get(repo).tag;
+                    final var latest = rel.get("tag_name").getAsString();
+                    final var current = state.get(repo).tag();
                     if (!latest.equals(current)) {
                         System.out.println(repo + ": update available (" + current + " -> " + latest + ")");
                     } else {
@@ -110,16 +112,16 @@ public enum Main {;
         System.out.println("Update complete.");
     }
 
-    private static void handleUpgrade(final UpgradeArgs args) throws Exception {
+    private static void handleUpgrade(final UpgradeArgs args) {
         final var state = new java.util.LinkedHashMap<>(State.load());
-        for (String repo : state.keySet()) {
+        for (final var repo : state.keySet()) {
             try {
                 final var rel = GitHub.release(repo, null);
-                final String latest = rel.get("tag_name").getAsString();
-                final String current = state.get(repo).tag;
+                final var latest = rel.get("tag_name").getAsString();
+                final var current = state.get(repo).tag();
                 if (!latest.equals(current)) {
                     System.out.println("Upgrading " + repo + " (" + current + " -> " + latest + ")...");
-                    Installer.install(repo, null, rel, state.get(repo).installDir);
+                    Installer.install(repo, null, rel, state.get(repo).installDir());
                 } else {
                     System.out.println(repo + ": already up to date");
                 }
@@ -134,7 +136,7 @@ public enum Main {;
             throw new IllegalArgumentException("Missing search query.");
         }
         final var results = GitHub.searchRepos(args.query);
-        for (String r : results) System.out.println(r);
+        for (final var r : results) System.out.println(r);
         if (results.isEmpty()) System.out.println("No results.");
     }
 
@@ -145,7 +147,7 @@ public enum Main {;
             return;
         }
         for (var entry : state.entrySet()) {
-            System.out.println(entry.getKey() + " " + entry.getValue().tag + " (" + entry.getValue().asset + ")");
+            System.out.println(entry.getKey() + " " + entry.getValue().tag() + " (" + entry.getValue().asset() + ")");
         }
     }
 
@@ -164,7 +166,7 @@ public enum Main {;
         final Path cache = Paths.get(System.getProperty("user.home"), ".hub-get", "cache");
         if (Files.exists(cache)) {
             try (var s = Files.walk(cache)) {
-                s.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
+                s.sorted(reverseOrder()).forEach(p -> {
                     try { Files.deleteIfExists(p); } catch (Exception ignored) { }
                 });
             }
