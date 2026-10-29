@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 .EXPORT_ALL_VARIABLES:
-.PHONY: help clean docs build test native install run validate release-notes coverage deploy
+.PHONY: help clean docs build test native install run validate release-notes coverage deploy mutation
 
 NAME=`xmllint --xpath "/project/artifactId/text()" pom.xml`
 VERSION=`xmllint --xpath "//project/version/text()" pom.xml`
@@ -54,6 +54,12 @@ install: native ## Install the native binary to /usr/local/bin
 run: build ## Build and run with the sample stream and reorder config
 	@$(INFO) "Running"
 	@cat src/data/stream.txt | java -jar target/filter.jar -c src/data/reorder.yml
+
+mutation: ## Run mutation tests on the unit tests
+	@$(INFO) "Running mutation tests"
+	@mvn -P mutation test
+	@$(INFO) "Mutation report written to target/pit-reports/index.html"
+
 
 validate: ## Check dependency versions, cves, licenses, and code quality
 	@mvn com.github.codemonstur:maven-check-pom:1.0.0:check validate
