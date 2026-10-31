@@ -30,20 +30,17 @@ docs: ## Generate project documentation and write to target/docs
 	@pandoc --pdf-engine=weasyprint -o target/docs/README.pdf README.md
 
 # Builds the code
-build: ## Compile and package the code, skipping tests
-	@$(INFO) "Building"
+build: ## Runs a mvn clean package
 	@mvn -DskipTests clean package
-
 test: ## Run the tests
 	@mvn test
 
 coverage: ## Run tests and generate a jacoco coverage report
 	@$(INFO) "Running tests and generating coverage report"
-	@mvn test
+	@mvn -Dstyle.color=always org.jacoco:jacoco-maven-plugin:0.8.15:prepare-agent test org.jacoco:jacoco-maven-plugin:0.8.15:report
 	@$(INFO) "Coverage report written to target/site/jacoco/index.html"
 	@output=$$(java src/build/CoverageSummary.java target/site/jacoco/jacoco.csv) || exit $$?; \
 	printf '%s\n' "$$output" | while IFS= read -r line; do $(INFO) "$$line"; done
-
 native: build ## Build a native binary with GraalVM
 	@native-image --no-fallback -jar target/filter.jar -o target/filter
 	@chmod +x target/filter
@@ -68,7 +65,6 @@ validate: ## Check dependency versions, cves, licenses, and code quality
 	@mvn versions:display-plugin-updates
 	@mvn verify -P vulnerabilities,licenses -DskipTests -T 1C
 	@mvn validate -P codequality
-
 release-notes: ## Write release notes from the git log
 	@mkdir -p src/docs/releases
 	@$(INFO) "Writing release notes to src/docs/releases/release-$(VERSION).txt"
