@@ -11,8 +11,16 @@ import jcli.CliParserBuilder;
 import static java.util.Comparator.reverseOrder;
 import static jcli.CliParserBuilder.newCliParser;
 
+/**
+ * The {@code Main} enum.
+ */
 public enum Main {;
 
+    /**
+     * Runs the application.
+     *
+     * @param args the command-line arguments
+     */
     public static void main(final String... args) {
         try {
             final CliParserBuilder<RootArgs> root = newCliParser(RootArgs::new).name("hub-get")

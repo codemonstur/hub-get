@@ -18,11 +18,19 @@ import static java.net.http.HttpResponse.BodyHandlers.ofString;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
+/**
+ * The {@code GitHub} class.
+ */
 public final class GitHub {
 
     private static final HttpClient CLIENT = HttpClient.newBuilder()
             .followRedirects(NORMAL).build();
 
+    /**
+     * Returns the result of {@code token}.
+     *
+     * @return the result
+     */
     public static String token() {
         final String t = System.getenv("HUB_GET_TOKEN");
         if (t != null && !t.isBlank()) return t;
@@ -31,6 +39,12 @@ public final class GitHub {
         return System.getenv("GH_TOKEN");
     }
 
+    /**
+     * Returns the result of {@code request}.
+     *
+     * @param url the url
+     * @return the result
+     */
     public static HttpRequest.Builder request(final String url) {
         final HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(url))
                 .header("Accept", "application/vnd.github+json")
@@ -42,6 +56,13 @@ public final class GitHub {
         return builder;
     }
 
+    /**
+     * Returns the result of {@code getJson}.
+     *
+     * @param url the url
+     * @return the result
+     * @throws Exception if the operation fails
+     */
     public static JsonObject getJson(final String url) throws Exception {
         final var req = request(url).GET().build();
         final var res = CLIENT.send(req, ofString());
@@ -51,6 +72,13 @@ public final class GitHub {
         return JsonParser.parseString(res.body()).getAsJsonObject();
     }
 
+    /**
+     * Returns the result of {@code getArray}.
+     *
+     * @param url the url
+     * @return the result
+     * @throws Exception if the operation fails
+     */
     public static JsonArray getArray(final String url) throws Exception {
         final var req = request(url).GET().build();
         final var res = CLIENT.send(req, ofString());
@@ -60,6 +88,14 @@ public final class GitHub {
         return JsonParser.parseString(res.body()).getAsJsonArray();
     }
 
+    /**
+     * Returns the result of {@code release}.
+     *
+     * @param repo the repo
+     * @param tag the tag
+     * @return the result
+     * @throws Exception if the operation fails
+     */
     public static JsonObject release(final String repo, final String tag) throws Exception {
         final String url = (tag == null || tag.isBlank())
                 ? "https://api.github.com/repos/" + repo + "/releases/latest"
@@ -67,6 +103,13 @@ public final class GitHub {
         return getJson(url);
     }
 
+    /**
+     * Returns the result of {@code searchRepos}.
+     *
+     * @param query the query
+     * @return the result
+     * @throws Exception if the operation fails
+     */
     public static List<String> searchRepos(final String query) throws Exception {
         final String url = "https://api.github.com/search/repositories?q=" + java.net.URLEncoder.encode(query, UTF_8) + "&per_page=20";
         final JsonObject obj = getJson(url);
@@ -79,6 +122,13 @@ public final class GitHub {
         return result;
     }
 
+    /**
+     * Performs the {@code download} operation.
+     *
+     * @param url the url
+     * @param target the target
+     * @throws Exception if the operation fails
+     */
     public static void download(final String url, final java.nio.file.Path target) throws Exception {
         final var req = request(url).GET().build();
         final var res = CLIENT.send(req, ofInputStream());
@@ -90,4 +140,10 @@ public final class GitHub {
         }
     }
 
+
+    /**
+     * Creates a new instance.
+     */
+    public GitHub() {
+    }
 }

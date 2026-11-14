@@ -18,10 +18,25 @@ import static java.nio.file.attribute.PosixFilePermission.GROUP_READ;
 import static java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.OTHERS_READ;
 
+/**
+ * The {@code Installer} class.
+ */
 public final class Installer {
 
+    /**
+     * The {@code SelectedAsset} record.
+     *
+     * @param name the name
+     * @param url the url
+     * @param size the size
+     */
     public record SelectedAsset(String name, String url, long size) { }
 
+    /**
+     * Returns the result of {@code osKey}.
+     *
+     * @return the result
+     */
     public static String osKey() {
         final String os = System.getProperty("os.name", "").toLowerCase();
         if (os.contains("linux")) return "linux";
@@ -30,6 +45,11 @@ public final class Installer {
         return "linux";
     }
 
+    /**
+     * Returns the result of {@code archKey}.
+     *
+     * @return the result
+     */
     public static String archKey() {
         final String arch = System.getProperty("os.arch", "").toLowerCase();
         if (arch.contains("aarch64") || arch.contains("arm64")) return "arm64";
@@ -38,6 +58,12 @@ public final class Installer {
         return arch;
     }
 
+    /**
+     * Returns the result of {@code selectAsset}.
+     *
+     * @param assets the assets
+     * @return the result
+     */
     public static SelectedAsset selectAsset(final JsonArray assets) {
         if (assets == null || assets.isEmpty()) return null;
         final String os = osKey();
@@ -63,11 +89,26 @@ public final class Installer {
         return s;
     }
 
+    /**
+     * Returns the result of {@code installDir}.
+     *
+     * @param override the override
+     * @return the result
+     */
     public static Path installDir(final String override) {
         if (override != null && !override.isBlank()) return Paths.get(override);
         return Paths.get(System.getProperty("user.home"), ".local", "bin");
     }
 
+    /**
+     * Performs the {@code install} operation.
+     *
+     * @param repo the repo
+     * @param tag the tag
+     * @param release the release
+     * @param dirOverride the dir override
+     * @throws Exception if the operation fails
+     */
     public static void install(final String repo, final String tag, final JsonObject release, final String dirOverride) throws Exception {
         final JsonArray assets = release.has("assets") ? release.getAsJsonArray("assets") : new JsonArray();
         final SelectedAsset asset = selectAsset(assets);
@@ -136,4 +177,10 @@ public final class Installer {
         System.out.println("Extracted to " + dest);
     }
 
+
+    /**
+     * Creates a new instance.
+     */
+    public Installer() {
+    }
 }
